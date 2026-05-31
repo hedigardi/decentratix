@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f8f3e9;
+  --foreground: #121212;
+  --surface: #fffdf8;
+  --ink-muted: #4b4b4b;
+  --line: #1c1c1c26;
+  --accent: #ff6138;
+  --accent-soft: #ffd8ca;
+  --mint: #28d9a1;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+}
+
+body {
+  min-height: 100vh;
+  background: var(--background);
+  background-image:
+    radial-gradient(circle at 16% 14%, #ffc3ab 0%, transparent 36%),
+    radial-gradient(circle at 85% 75%, #baf9e2 0%, transparent 35%),
+    linear-gradient(180deg, #fff8ed 0%, #f8f3e9 100%);
+  color: var(--foreground);
+  font-family: var(--font-body), sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display), serif;
+}
+
+.grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.2;
+  background-image: radial-gradient(#00000010 1px, transparent 1px);
+  background-size: 3px 3px;
+}
+
+.card-surface {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: 0 20px 60px -35px #0000006f;
+}
+
+.reveal {
+  animation: reveal 700ms ease both;
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
