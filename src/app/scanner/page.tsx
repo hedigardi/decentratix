@@ -5,8 +5,14 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useWriteContract } from "wagmi";
 
+import { ThemedLogo } from "@/components/themed-logo";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { CONTRACT_ADDRESS, DECENTRATIX_ABI } from "@/lib/abi";
-import { parseQrPayload } from "@/lib/dynamicQr";
+import {
+  parseQrPayload,
+  QR_FRESHNESS_GRACE_SECONDS,
+  QR_SIGNATURE_WINDOW_SECONDS,
+} from "@/lib/dynamicQr";
 
 type VerificationState = "idle" | "checking" | "valid" | "invalid" | "expired";
 
@@ -91,7 +97,11 @@ export default function TicketScannerPage() {
       const payload = parseQrPayload(rawData);
       const now = Math.floor(Date.now() / 1000);
 
-      if (now - payload.timestamp > 30) {
+      if (
+        now < payload.timestamp - QR_FRESHNESS_GRACE_SECONDS ||
+        now - payload.timestamp >
+          QR_SIGNATURE_WINDOW_SECONDS + QR_FRESHNESS_GRACE_SECONDS
+      ) {
         setVerificationState("expired");
         return;
       }
@@ -149,97 +159,195 @@ export default function TicketScannerPage() {
     }
   };
 
+  const scannerToneClass =
+    verificationState === "valid"
+      ? "status-success"
+      : verificationState === "invalid" || verificationState === "expired"
+      ? "status-danger"
+      : verificationState === "checking"
+      ? "status-warning"
+      : "";
+
+  const scannerTitle =
+    verificationState === "valid"
+      ? "Entry approved"
+      : verificationState === "invalid"
+      ? "Entry rejected"
+      : verificationState === "expired"
+      ? "QR expired"
+      : verificationState === "checking"
+      ? "Verification in progress"
+      : isCameraActive
+      ? "Scanner live"
+      : "Ready for entry";
+
+  const scannerDescription =
+    verificationState === "valid"
+      ? "The live QR matched the current owner and the ticket can now be locked after admission."
+      : verificationState === "invalid"
+      ? "This ticket failed ownership or freshness checks and should not be admitted."
+      : verificationState === "expired"
+      ? "This QR is outside the signed freshness window and must be refreshed before entry."
+      : verificationState === "checking"
+      ? "Checking timestamp freshness, recovered signer, and current on-chain ownership."
+      : isCameraActive
+      ? "Point the rear camera at the live ticket QR to run an entry check."
+      : "Open the camera to begin live ticket verification.";
+
   return (
-    <main className="mx-auto w-full max-w-xl px-5 py-10">
-      <div className="rounded-3xl border border-black/15 bg-white/90 p-6 shadow-xl shadow-black/10 backdrop-blur-sm">
-        <div className="mb-6 flex items-center justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-black uppercase tracking-tight">
-              Gate Scanner
-            </h1>
-            <p className="text-sm text-black/60">
-              Decentratix verification mode
-            </p>
-          </div>
-          <Link
-            href="/"
-            className="rounded-full border border-black/20 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] hover:bg-black hover:text-white"
-          >
-            Back
-          </Link>
+    <main className="app-shell">
+      <div className="topbar">
+        <div className="brand-logo">
+          <ThemedLogo className="h-24 w-auto md:h-28" />
         </div>
-
-        <div
-          id="qr-reader-container"
-          className="w-full overflow-hidden rounded-2xl border border-black/20 bg-black"
-          style={{
-            display: isCameraActive ? "block" : "none",
-            minHeight: "300px",
-          }}
-        />
-
-        <div className="mt-5 space-y-4">
-          {!isCameraActive ? (
-            <button
-              onClick={startCamera}
-              className="w-full rounded-2xl bg-black px-5 py-3 text-sm font-bold uppercase tracking-[0.2em] text-white hover:opacity-90"
+        <div className="topbar-right">
+          <div className="topbar-theme">
+            <ThemeToggle />
+          </div>
+          <div className="topbar-actions">
+            <Link
+              href="/"
+              className="glass-button px-4 py-2 text-sm font-semibold"
             >
-              Open Camera
-            </button>
-          ) : (
-            <button
-              onClick={() => void stopCamera()}
-              className="w-full rounded-2xl bg-red-600 px-5 py-3 text-sm font-bold uppercase tracking-[0.2em] text-white hover:bg-red-500"
-            >
-              Cancel Scan
-            </button>
-          )}
+              Back to dashboard
+            </Link>
+          </div>
+        </div>
+      </div>
 
-          {verificationState === "checking" && (
-            <div className="rounded-2xl border border-amber-400/40 bg-amber-100 p-4 text-center text-sm font-semibold text-amber-900">
-              Checking timestamp, signature, and on-chain ownership...
-            </div>
-          )}
+      <div className="card-surface scanner-surface rounded-2xl p-6 md:p-8">
+        <div className="scanner-shell">
+          <div className="scanner-head">
+            <div className="scanner-summary">
+              <div>
+                <p className="muted text-xs font-semibold uppercase tracking-[0.16em]">
+                  Gate operations
+                </p>
+                <h1 className="mt-2 text-4xl font-semibold leading-tight tracking-tight md:text-6xl">
+                  Gate scanner
+                </h1>
+                <p className="muted mt-2 text-sm leading-6">
+                  Fast ticket verification for entry staff, security teams, and
+                  live venue operations.
+                </p>
+              </div>
 
-          {verificationState === "expired" && (
-            <div className="rounded-2xl border border-red-400/50 bg-red-100 p-4 text-sm text-red-900">
-              <p className="font-extrabold uppercase tracking-wide">
-                Expired QR code
-              </p>
-              <p className="mt-1 text-xs">
-                The code is older than 30 seconds and was rejected.
-              </p>
+              <div className="scanner-strip">
+                <div className="scanner-tile">
+                  <p className="muted text-xs font-semibold uppercase tracking-[0.12em]">
+                    Mode
+                  </p>
+                  <p className="mt-2 text-sm font-semibold">
+                    {isCameraActive ? "Live scanning" : "Standby"}
+                  </p>
+                </div>
+                <div className="scanner-tile">
+                  <p className="muted text-xs font-semibold uppercase tracking-[0.12em]">
+                    Freshness rule
+                  </p>
+                  <p className="mt-2 text-sm font-semibold">5 minute window</p>
+                </div>
+                <div className="scanner-tile">
+                  <p className="muted text-xs font-semibold uppercase tracking-[0.12em]">
+                    Network check
+                  </p>
+                  <p className="mt-2 text-sm font-semibold">Ownership match</p>
+                </div>
+              </div>
             </div>
-          )}
+          </div>
 
-          {verificationState === "invalid" && (
-            <div className="rounded-2xl border border-red-400/50 bg-red-100 p-4 text-sm text-red-900">
-              <p className="font-extrabold uppercase tracking-wide">
-                Invalid ticket
-              </p>
-              <p className="mt-1 text-xs">
-                Signature mismatch, stale owner, or already scanned ticket.
-              </p>
-            </div>
-          )}
+          <div className="scanner-state-panel premium-state-panel">
+            <p className="scanner-state-label">Entry status</p>
+            <h2 className="text-2xl font-semibold tracking-tight">
+              {scannerTitle}
+            </h2>
+            <p className="muted text-sm leading-6">{scannerDescription}</p>
 
-          {verificationState === "valid" && ticketDetails && (
-            <div className="rounded-2xl border border-emerald-500/40 bg-emerald-100 p-4 text-sm text-emerald-900">
-              <p className="font-extrabold uppercase tracking-wide">
-                Access granted
-              </p>
-              <p className="mt-2 font-mono text-xs">
-                Ticket #{ticketDetails.tokenId}
-              </p>
-              <p className="font-mono text-xs">
-                Holder: {ticketDetails.owner.slice(0, 8)}...
-                {ticketDetails.owner.slice(-6)}
-              </p>
-              <p className="mt-2 text-xs">
-                scanAndLockTicket submitted if scanner wallet was connected.
-              </p>
+            {(verificationState !== "idle" || isCameraActive) && (
+              <div
+                className={`scanner-status-lg mt-2 text-sm ${scannerToneClass}`}
+              >
+                {verificationState === "valid" && ticketDetails ? (
+                  <>
+                    <p className="font-semibold">
+                      Ticket #{ticketDetails.tokenId}
+                    </p>
+                    <p className="mt-1 font-mono text-xs">
+                      Owner: {ticketDetails.owner.slice(0, 8)}...
+                      {ticketDetails.owner.slice(-6)}
+                    </p>
+                  </>
+                ) : verificationState === "expired" ? (
+                  <>
+                    <p className="font-semibold">Refresh required</p>
+                    <p className="mt-1 text-xs">
+                      Ask the attendee to refresh the ticket and scan again.
+                    </p>
+                  </>
+                ) : verificationState === "invalid" ? (
+                  <>
+                    <p className="font-semibold">Ticket verification failed</p>
+                    <p className="mt-1 text-xs">
+                      The scan did not match the latest valid ownership state.
+                    </p>
+                  </>
+                ) : verificationState === "checking" ? (
+                  <p className="font-semibold">
+                    Verifying freshness and current owner...
+                  </p>
+                ) : (
+                  <p className="font-semibold">
+                    The scanner is ready for the next ticket.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="scanner-stage">
+            <div className="scanner-frame">
+              <div
+                id="qr-reader-container"
+                className="w-full overflow-hidden rounded-xl border border-[var(--line)] bg-black"
+                style={{
+                  display: isCameraActive ? "block" : "block",
+                  minHeight: "300px",
+                }}
+              />
+
+              {!isCameraActive && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/70 p-6 text-center text-white">
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/65">
+                      Scanner standby
+                    </p>
+                    <p className="mt-3 text-lg font-semibold">
+                      Open the camera to begin live entry verification.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+          </div>
+
+          <div className="space-y-4">
+            {!isCameraActive ? (
+              <button
+                onClick={startCamera}
+                className="glass-button glass-button-primary w-full px-5 py-3 text-sm font-semibold"
+              >
+                Start scanner
+              </button>
+            ) : (
+              <button
+                onClick={() => void stopCamera()}
+                className="glass-button w-full px-5 py-3 text-sm font-semibold"
+              >
+                Stop scanner
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </main>
