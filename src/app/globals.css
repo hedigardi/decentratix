@@ -624,6 +624,22 @@ h4 {
   filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.04));
 }
 
+.themed-logo-light {
+  display: block;
+}
+
+.themed-logo-dark {
+  display: none;
+}
+
+:root[data-theme="dark"] .themed-logo-light {
+  display: none;
+}
+
+:root[data-theme="dark"] .themed-logo-dark {
+  display: block;
+}
+
 .glass-chip {
   display: inline-flex;
   align-items: center;
