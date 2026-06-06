@@ -624,20 +624,39 @@ h4 {
   filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.04));
 }
 
-.themed-logo-light {
+.brand-logo-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.themed-logo-stack {
+  position: relative;
+  display: inline-flex;
+  line-height: 0;
+}
+
+.themed-logo {
   display: block;
 }
 
 .themed-logo-dark {
-  display: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
 :root[data-theme="dark"] .themed-logo-light {
-  display: none;
+  opacity: 0;
 }
 
 :root[data-theme="dark"] .themed-logo-dark {
-  display: block;
+  opacity: 1;
 }
 
 .glass-chip {
