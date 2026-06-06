@@ -128,36 +128,6 @@ If you deploy contracts from CI/CD, also consider:
 - PRIVATE_KEY
 - BASESCAN_API_KEY
 
-## SEO and Launch Checklist
-
-Before public launch, verify the following:
-
-1. Metadata and canonical URLs
-
-- Page title and description are correct on / and /scanner
-- Canonical URLs resolve to https://decentratix.hedigardi.com
-
-2. Crawl and indexing
-
-- robots.txt is available at /robots.txt
-- sitemap.xml is available at /sitemap.xml
-- Submit sitemap to Google Search Console and Bing Webmaster Tools
-
-3. Social previews
-
-- Open Graph preview works in social debuggers
-- Twitter card preview works and shows the generated image
-
-4. Favicons and manifest
-
-- favicon appears on desktop browsers
-- site.webmanifest is reachable and valid
-
-5. Performance and quality
-
-- Run npm run lint and npm run build
-- Validate mobile usability and core pages in production mode
-
 ## Security and Production Notes
 
 Decentratix currently presents a product-grade demo flow. For a hardened production deployment, add:
