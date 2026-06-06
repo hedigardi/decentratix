@@ -4,6 +4,7 @@ import { useTheme } from "@/components/theme-provider";
 
 export function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
+  // aria-pressed reflects the current mode for assistive technologies.
   const isDark = theme === "dark";
 
   return (

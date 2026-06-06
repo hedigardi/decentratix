@@ -33,6 +33,7 @@ export default function TicketScannerPage() {
   const scannerRunningRef = useRef(false);
   const { writeContractAsync } = useWriteContract();
 
+  // Shared teardown path for manual stop and component unmount.
   const stopCamera = async () => {
     if (!scannerRef.current || !scannerRunningRef.current) {
       setIsCameraActive(false);
@@ -57,6 +58,7 @@ export default function TicketScannerPage() {
   }, []);
 
   const startCamera = async () => {
+    // html5-qrcode is loaded lazily to keep initial bundle smaller.
     const { Html5Qrcode } = await import("html5-qrcode");
 
     setIsCameraActive(true);
@@ -94,6 +96,7 @@ export default function TicketScannerPage() {
     setVerificationState("checking");
 
     try {
+      // Verify signed payload freshness before doing on-chain ownership reads.
       const payload = parseQrPayload(rawData);
       const now = Math.floor(Date.now() / 1000);
 
@@ -141,6 +144,7 @@ export default function TicketScannerPage() {
       setVerificationState("valid");
 
       try {
+        // Optional lock write: scanner may run read-only if wallet rejects transaction.
         await writeContractAsync({
           address: CONTRACT_ADDRESS,
           abi: DECENTRATIX_ABI,
@@ -196,6 +200,7 @@ export default function TicketScannerPage() {
 
   return (
     <main className="app-shell">
+      {/* Scanner topbar mirrors dashboard navigation and theme controls. */}
       <div className="topbar">
         <div className="brand-logo">
           <ThemedLogo className="h-24 w-auto md:h-28" />
@@ -216,6 +221,7 @@ export default function TicketScannerPage() {
       </div>
 
       <div className="card-surface scanner-surface rounded-2xl p-6 md:p-8">
+        {/* Scanner shell groups operational status, camera feed and primary actions. */}
         <div className="scanner-shell">
           <div className="scanner-head">
             <div className="scanner-summary">

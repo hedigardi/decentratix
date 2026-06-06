@@ -175,6 +175,7 @@ contract Decentratix is ERC721URIStorage, ReentrancyGuard, Ownable {
 
         if (isTransfer) {
             TicketMeta storage ticket = tickets[tokenId];
+            // Secondary transfers are only allowed through the marketplace buy flow.
             if (ticket.isScanned) revert TicketAlreadyScanned();
             if (!marketTransferInProgress) revert TransfersDisabled();
         }

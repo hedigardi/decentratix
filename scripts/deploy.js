@@ -3,6 +3,7 @@ const { ethers } = require("hardhat");
 async function main() {
   console.log("Starting Decentratix deployment...");
 
+  // Operational roles are injected via env for safer deployment automation.
   const organizerAddress = process.env.ORGANIZER_ADDRESS;
   const scannerAddress = process.env.SCANNER_ADDRESS;
 
@@ -13,6 +14,7 @@ async function main() {
   }
 
   const Decentratix = await ethers.getContractFactory("Decentratix");
+  // Constructor bps values: max markup 10% and royalty 5%.
   const contract = await Decentratix.deploy(
     "Decentratix Event",
     "TIX",

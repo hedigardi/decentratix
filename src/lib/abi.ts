@@ -1,7 +1,9 @@
+// Public contract address can be swapped per deployment environment.
 export const CONTRACT_ADDRESS =
   (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as `0x${string}` | undefined) ||
   "0x0000000000000000000000000000000000000000";
 
+// ABI only contains methods required by the frontend demo flows.
 export const DECENTRATIX_ABI = [
   {
     inputs: [{ internalType: "uint256", name: "tokenId", type: "uint256" }],

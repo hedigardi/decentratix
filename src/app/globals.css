@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+/* Theme tokens drive both light and dark modes via [data-theme] on :root. */
 :root {
   --background: #f6f7f9;
   --foreground: #111827;
@@ -59,6 +60,7 @@
   --font-display: var(--font-display);
 }
 
+/* Global background atmosphere is fixed; cards/content scroll independently. */
 body {
   position: relative;
   isolation: isolate;

@@ -10,6 +10,7 @@ const BASESCAN_API_KEY = process.env.BASESCAN_API_KEY || "";
 const config = {
   solidity: "0.8.20",
   networks: {
+    // Base Sepolia is the primary test network used by the demo dApp.
     baseSepolia: {
       url: "https://sepolia.base.org",
       accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
@@ -17,6 +18,7 @@ const config = {
     },
   },
   etherscan: {
+    // Enables `hardhat verify` against BaseScan testnet explorer endpoints.
     apiKey: {
       baseSepolia: BASESCAN_API_KEY,
     },

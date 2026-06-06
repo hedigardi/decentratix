@@ -1,55 +1,64 @@
 # Decentratix
 
-Decentratix is a portfolio-ready Web3 ticketing demo built with React, Next.js, TypeScript, Solidity, and Wagmi.
+Decentratix is a Web3 ticketing experience focused on fair resale and secure entry validation.
 
-It demonstrates three core ideas:
+Live domain:
+https://decentratix.hedigardi.com
 
-- Fair resale caps to reduce scalping incentives.
-- Automatic organizer royalties on every secondary sale.
-- Dynamic, signed QR payloads to reduce screenshot/replay fraud.
+## Product Overview
 
-## Core Rules
+Decentratix demonstrates a ticketing model where secondary-market rules are transparent and enforceable:
 
-- Resale cap rule:
+- Resale caps reduce extreme markups
+- Organizer royalties are routed on each valid resale
+- Rotating signed QR payloads help prevent screenshot replay at the gate
 
-  `P_resell <= P_face * (1 + alpha)`
+Core pricing logic:
 
-- Organizer royalty rule:
+- Resale cap:
+  $P_{resell} \le P_{face} \times (1 + \alpha)$
+- Royalty:
+  $R_{organizer} = P_{resell} \times \beta$
 
-  `R_artist = P_resell * beta`
+Current defaults:
 
-Current demo contract defaults:
+- $\alpha = 10\%$ (1000 bps)
+- $\beta = 5\%$ (500 bps)
 
-- `alpha = 10%` (`1000` basis points)
-- `beta = 5%` (`500` basis points)
+## Feature Highlights
 
-## Project Structure
+### Frontend
 
-- `src/` Next.js frontend source (App Router, TypeScript, Wagmi)
-- `public/` Frontend static assets
-- `contracts/` Solidity smart contract (`Decentratix.sol`)
-- `scripts/` Hardhat deploy scripts
+- Guided user flow: Create ticket -> Set resale price -> Complete sale
+- Wallet connect + Base Sepolia switching
+- Live QR preview using signed time windows
+- Dedicated scanner interface at /scanner
 
-## Smart Contract Features
+### Smart Contract
 
-- ERC-721 ticket ownership.
-- Secondary listing with max markup enforcement.
-- On-chain royalty split to organizer wallet.
-- Scanner-restricted `scanAndLockTicket` entry lock.
-- Transfer restrictions: direct wallet-to-wallet transfer is blocked to force market rules.
+- ERC-721 ticket ownership
+- Capped resale enforcement
+- Royalty split to organizer wallet
+- Scanner lock via scanAndLockTicket
+- Transfer restrictions outside approved market flow
 
-## Frontend Features
+## Tech Stack
 
-- Wallet connect and Base Sepolia switch.
-- Ticket registration and resale cap simulation.
-- Dynamic QR generation with ECDSA signatures (refresh every 15s).
-- Mobile scanner view in `/scanner` for timestamp + signature + owner checks.
+- Next.js (App Router) + TypeScript
+- Wagmi + Ethers
+- Solidity + Hardhat
+- QR rendering and scanner integration
 
-## Getting Started
+## Repository Structure
+
+- src: Next.js application code
+- public: static assets, icons, manifest
+- contracts: Solidity contracts
+- scripts: deployment scripts
+
+## Local Development
 
 ### 1. Install dependencies
-
-In repo root:
 
 ```bash
 npm install
@@ -57,27 +66,25 @@ npm install
 
 ### 2. Configure environment variables
 
-Copy `.env.example` in the repo root and fill values for deployment.
-
-Create `.env.local` in the root with:
+Create .env.local in the project root:
 
 ```bash
 NEXT_PUBLIC_CONTRACT_ADDRESS=0xYourDeployedContract
 NEXT_PUBLIC_BASE_RPC_URL=https://sepolia.base.org
 ```
 
-### 3. Run frontend locally
+### 3. Run locally
 
 ```bash
 npm run dev
 ```
 
-Open:
+Local routes:
 
-- `http://localhost:3000/` for the demo dApp
-- `http://localhost:3000/scanner` for gate scanner mode
+- http://localhost:3000/
+- http://localhost:3000/scanner
 
-## Compile and Deploy Contract
+## Contract Commands
 
 Compile:
 
@@ -91,22 +98,71 @@ Deploy to Base Sepolia:
 npm run deploy:base
 ```
 
-Verify contract on Basescan:
+Verify on BaseScan:
 
 ```bash
 npm run verify:base -- <DEPLOYED_ADDRESS> "Decentratix Event" "TIX" "<ORGANIZER_ADDR>" "<SCANNER_ADDR>" 1000 500
 ```
 
-## Scanner Verification Flow
+## Netlify Deployment
 
-When the scanner reads a QR payload, it verifies:
+This project is configured for Netlify deployment with Next.js support.
 
-1. Payload age is less than or equal to 30 seconds.
-2. Signature recovers the expected wallet address.
-3. Recovered address equals `ownerOf(tokenId)` on-chain.
-4. Contract accepts `scanAndLockTicket(tokenId)` for one-time entry.
+### Build settings
 
-## Notes
+- Build command: npm run build
+- Next.js runtime: auto-detected via @netlify/plugin-nextjs
+- No manual publish directory is required for Next.js runtime deployments
 
-- This repo contains a simulation-first UI for portfolio demonstration.
-- For production, add stronger anti-bot controls, scanner operator auth, and a resilient backend/event indexer.
+### Environment variables on Netlify
+
+Set these in Site settings -> Environment variables:
+
+- NEXT_PUBLIC_CONTRACT_ADDRESS
+- NEXT_PUBLIC_BASE_RPC_URL
+
+If you deploy contracts from CI/CD, also consider:
+
+- ORGANIZER_ADDRESS
+- SCANNER_ADDRESS
+- PRIVATE_KEY
+- BASESCAN_API_KEY
+
+## SEO and Launch Checklist
+
+Before public launch, verify the following:
+
+1. Metadata and canonical URLs
+
+- Page title and description are correct on / and /scanner
+- Canonical URLs resolve to https://decentratix.hedigardi.com
+
+2. Crawl and indexing
+
+- robots.txt is available at /robots.txt
+- sitemap.xml is available at /sitemap.xml
+- Submit sitemap to Google Search Console and Bing Webmaster Tools
+
+3. Social previews
+
+- Open Graph preview works in social debuggers
+- Twitter card preview works and shows the generated image
+
+4. Favicons and manifest
+
+- favicon appears on desktop browsers
+- site.webmanifest is reachable and valid
+
+5. Performance and quality
+
+- Run npm run lint and npm run build
+- Validate mobile usability and core pages in production mode
+
+## Security and Production Notes
+
+Decentratix currently presents a product-grade demo flow. For a hardened production deployment, add:
+
+- Scanner operator authorization and audit logging
+- Dedicated backend/indexer for robust event ingestion
+- Abuse protection and rate limits for public endpoints
+- Monitoring, alerting, and incident response workflows

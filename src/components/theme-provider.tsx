@@ -20,7 +20,13 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 function resolveInitialTheme(): Theme {
+  // SSR fallback keeps HTML deterministic before browser APIs are available.
   if (typeof window === "undefined") return "light";
+
+  const rootTheme = document.documentElement.dataset.theme;
+  if (rootTheme === "light" || rootTheme === "dark") {
+    return rootTheme;
+  }
 
   const stored = window.localStorage.getItem("theme");
   if (stored === "light" || stored === "dark") {
@@ -36,6 +42,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => resolveInitialTheme());
 
   useEffect(() => {
+    // Mirror theme into the root data attribute used by global CSS tokens.
     document.documentElement.dataset.theme = theme;
     window.localStorage.setItem("theme", theme);
   }, [theme]);

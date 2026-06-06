@@ -59,6 +59,8 @@ export default function HomePage() {
   const listPrice = Number(listPriceInput || 0);
   const royalty = useMemo(() => listPrice * (ROYALTY_BPS / 10000), [listPrice]);
   const sellerNet = useMemo(() => listPrice - royalty, [listPrice, royalty]);
+
+  // Guided step state keeps first-time visitors on a single linear flow.
   const hasTicket = ticket !== null;
   const hasListedTicket = hasTicket && ticket.listedPriceUsd !== null;
   const flowStep = !hasTicket ? 1 : !hasListedTicket ? 2 : 3;
@@ -76,6 +78,7 @@ export default function HomePage() {
       return;
     }
 
+    // Regenerate signed QR only when the signature window changes.
     const run = async () => {
       try {
         if (!window.ethereum) {
@@ -127,6 +130,7 @@ export default function HomePage() {
   }, [ticket, isConnected, qrPayload]);
 
   const addLog = (line: string) => {
+    // Keep activity feed concise and focused on the latest actions.
     setLog((current) => [line, ...current].slice(0, 6));
   };
 
@@ -180,6 +184,7 @@ export default function HomePage() {
       return;
     }
 
+    // Demo-only token generation for UI simulation.
     const newTicket: DemoTicket = {
       tokenId: Math.floor(Math.random() * 900000) + 100000,
       facePriceUsd: parsedPrice,
@@ -207,6 +212,7 @@ export default function HomePage() {
       return;
     }
 
+    // Enforce resale cap before moving ticket into the listed state.
     const allowedCap = ticket.facePriceUsd * (1 + MARKUP_BPS / 10000);
     if (parsedListPrice > allowedCap) {
       addLog(
@@ -250,6 +256,7 @@ export default function HomePage() {
 
   return (
     <main className="app-shell">
+      {/* Header actions: theme, wallet, network state and brand entry point. */}
       <div className="topbar">
         <div className="brand-logo">
           <ThemedLogo className="h-24 w-auto md:h-28" />
@@ -302,6 +309,7 @@ export default function HomePage() {
       </div>
 
       <section>
+        {/* Hero communicates value proposition and primary user intents. */}
         <article className="card-surface hero-surface motion-delay-1 rounded-[1.75rem] p-6 md:p-8">
           <div className="hero-grid hero-grid-compact">
             <div className="hero-main">
@@ -491,6 +499,7 @@ export default function HomePage() {
       </section>
 
       <section ref={controlsSectionRef} className="mt-5" id="ticket-controls">
+        {/* Main interaction surface for ticket issuance, listing and sale simulation. */}
         <article className="card-surface showcase-surface motion-delay-2 rounded-[1.5rem] p-6 md:p-8">
           <div className="showcase-grid">
             <div className="control-stack">
@@ -697,6 +706,7 @@ export default function HomePage() {
       </section>
 
       <section className="mt-5">
+        {/* Supporting proof points and live activity stream for product storytelling. */}
         <article className="card-surface summary-surface motion-delay-2 rounded-[1.5rem] p-6 md:p-8">
           <div className="summary-grid">
             <div>
